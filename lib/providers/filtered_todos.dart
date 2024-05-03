@@ -2,9 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:todo_provider/models/todo_model.dart';
-import 'package:todo_provider/providers/todo_filter.dart';
-import 'package:todo_provider/providers/todo_list.dart';
-import 'package:todo_provider/providers/todo_search.dart';
+import 'package:todo_provider/providers/providers.dart';
 
 class FilteredTodosState extends Equatable {
   final List<Todo> filteredTodos;
