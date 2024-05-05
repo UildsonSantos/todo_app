@@ -1,5 +1,7 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:todo_provider/models/todo_model.dart';
 import 'package:todo_provider/providers/providers.dart';
 
@@ -151,11 +153,13 @@ class ShowTodos extends StatelessWidget {
 
   Container showBackgroud(int direction) {
     return Container(
+      margin: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
       color: Colors.red,
       alignment: direction == 0 ? Alignment.centerLeft : Alignment.centerRight,
       child: const Icon(
         Icons.delete,
-        size: 25.0,
+        size: 30.0,
         color: Colors.white,
       ),
     );
@@ -177,12 +181,128 @@ class ShowTodos extends StatelessWidget {
           key: ValueKey(todos[index].id),
           background: showBackgroud(0),
           secondaryBackground: showBackgroud(1),
-          child: Text(
-            todos[index].desc,
-            style: const TextStyle(fontSize: 20.0),
+          onDismissed: (_) {
+            context.read<TodoList>().removeTodo(todos[index]);
+          },
+          confirmDismiss: (_) {
+            return showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('Are you sure?'),
+                  content: const Text('Do you really want to delete?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('NO'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('YES'),
+                    )
+                  ],
+                );
+              },
+            );
+          },
+          child: TodoItem(
+            todo: todos[index],
           ),
         );
       },
+    );
+  }
+}
+
+class TodoItem extends StatefulWidget {
+  final Todo todo;
+
+  const TodoItem({
+    super.key,
+    required this.todo,
+  });
+
+  @override
+  State<TodoItem> createState() => _TodoItemState();
+}
+
+class _TodoItemState extends State<TodoItem> {
+  late final TextEditingController textEditingController;
+
+  @override
+  void initState() {
+    super.initState();
+    textEditingController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            // ignore: no_leading_underscores_for_local_identifiers
+            bool _error = false;
+            textEditingController.text = widget.todo.desc;
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return AlertDialog(
+                  title: const Text('Edit Todo'),
+                  content: TextField(
+                    controller: textEditingController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      errorText: _error ? 'Value cannot be empty' : null,
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('CANCEL'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(
+                          () {
+                            _error = textEditingController.text.isEmpty
+                                ? true
+                                : false;
+
+                            if (!_error) {
+                              context.read<TodoList>().editTodo(
+                                  widget.todo.id, textEditingController.text);
+                              Navigator.pop(context);
+                            }
+                          },
+                        );
+                      },
+                      child: const Text('EDIT'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+      leading: Checkbox(
+        value: widget.todo.completed,
+        onChanged: (bool? checked) {
+          context.read<TodoList>().tongleTodo(widget.todo.id);
+        },
+      ),
+      title: Text(
+        widget.todo.desc,
+        style: const TextStyle(fontSize: 20.0),
+      ),
     );
   }
 }
