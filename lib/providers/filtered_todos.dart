@@ -31,7 +31,16 @@ class FilteredTodosState extends Equatable {
 }
 
 class FilteredTodos with ChangeNotifier {
-  FilteredTodosState _state = FilteredTodosState.initial();
+  // FilteredTodosState _state = FilteredTodosState.initial();
+
+  late FilteredTodosState _state;
+  final List<Todo> initialFilteredTodos;
+
+  FilteredTodos({
+    required this.initialFilteredTodos,
+  }) {
+    _state = FilteredTodosState(filteredTodos: initialFilteredTodos);
+  }
   FilteredTodosState get state => _state;
 
   void update(
